@@ -4,15 +4,14 @@ import pyvista as pv
 import pdb
 import os 
 # Should only for 2 positions X1 and X2
-def update_pos(position,L):
+def update_pos(position):
     diff = pos_diff(position)
-    norm = np.linalg.norm(diff, axis=-1, keepdims=True) + 1e-4
+    norm = np.linalg.norm(diff, axis=-1, keepdims=True)
     n = diff/norm
-    x1 = L * 1/2 * (-n)
-    x2 = L * 1/2 * (n)
-    delta_L = (norm - DISTANCE)/2
+    x1 = (norm - DISTANCE) * 1/2 * (-n)
+    x2 = (norm - DISTANCE) * 1/2 * (n)
     # pdb.set_trace()
-    return x1, x2, delta_L
+    return x1, x2
 
 # Should only for 2 positions X1 and X2
 def pos_diff(position):
@@ -77,35 +76,16 @@ for frame in range(frames):
     # not updating the first particle
     # pdb.set_trace()
     # particle_positions[1:, 2] -= Velocity * frame * dt
-    particle_positions[1:] = particle_positions[1:] + V * frame * dt + ACCELARATION * (frame * dt)**2   
-    old_particle_positions = particle_positions.copy()
-    # print(f"it: {frame}, Before loop\n",particle_positions)
+    particle_positions[1:] = particle_positions[1:] + ACCELARATION * (frame * dt)**2   
     for j in range(particle_positions.shape[0]-1):
-        # print(particle_positions[1:,2])
-        # pdb.set_trace()
         for _ in range(100):
-            x1,x2, delta_L = update_pos(particle_positions[j:j+2],L)
-            L = L - delta_L
-            # print(L)
-            # print(x1)
-            # pdb.set_trace()
+            x1,x2 = update_pos(particle_positions[j:j+2])
             if j == 0:
                 particle_positions[j] = particle_positions[j]
                 particle_positions[j+1] = particle_positions[j+1] - x2[0]
             else:
                 particle_positions[j] = particle_positions[j] - x1[0]
                 particle_positions[j+1] = particle_positions[j+1] - x2[0]
-    if frame == 20:
-        pdb.set_trace()
-    print(particle_positions[1:])
-    print(old_particle_positions[1:])
-    V = (1/dt)*(particle_positions[1:] - old_particle_positions[1:])
-    print("Velocity",particle_positions[1:] - old_particle_positions[1:])
-    
-    # print(f"it:{frame} , after loop\n",particle_positions)
-    # print(old_particle_positions)
-    # pdb.set_trace()
-    # Create a new set of spheres for each frame
     spheres = pv.MultiBlock()
     for pos in particle_positions:
         sphere = pv.Sphere(radius=5, center=pos)
