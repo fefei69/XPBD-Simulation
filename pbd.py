@@ -7,14 +7,17 @@ import os
 def update_pos(position,L):
     diff = pos_diff(position)
     norm = np.linalg.norm(diff, axis=-1, keepdims=True) + 1e-4
+    # computing lambda (for each constraint)
+    L = (norm - DISTANCE)/2
     n = diff/norm
-    x1 = L * 1/2 * (-n)
-    x2 = L * 1/2 * (n)
-    delta_L = (norm - DISTANCE)/2
+    delta_x1 = L * 1/2 * (-n)
+    delta_x2 = L * 1/2 * (n)
+    
     # pdb.set_trace()
-    return x1, x2, delta_L
+    return delta_x1, delta_x2, delta_L
 
 # Should only for 2 positions X1 and X2
+# X2 - X1
 def pos_diff(position):
     diff_x = position[:,0][1:] - position[:,0][0:-1]
     diff_y = position[:,1][1:] - position[:,1][0:-1]
@@ -30,14 +33,16 @@ def generate_particles(num_particles, bounds):
 
 spheres = pv.MultiBlock()   
 
-# bounds for x 
+
 ACC = np.array([0.,0.,-9.8])
-MASS = 1
+# Setting each particle with same mass
+MASS_INV = 1
 L = 0
 save = False
 Velocity = 0
 Fixed_point = True
 # Generate particle positions
+# bounds for x 
 number_of_particles = 5
 bounds = [0, 500]
 DISTANCE = bounds[1]/(number_of_particles-1)
