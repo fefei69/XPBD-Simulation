@@ -77,7 +77,7 @@ if save == True:
     plotter.write_frame()
 plotter.camera.position = camera_position
 
-frames = 400 
+frames = 300 
 dt = 0.01  # Time step for animation
 solver_iter = 100
 for frame in range(frames):
@@ -90,7 +90,7 @@ for frame in range(frames):
         # pdb.set_trace()
         for _ in range(solver_iter):
             x1,x2, new_lambda = update_pos(particle_positions[j:j+2],new_lambda)
-            # print(L)
+            # print(new_lambda)
             # print(x1)
             # pdb.set_trace()
             if j == 0:
@@ -99,8 +99,8 @@ for frame in range(frames):
             else:
                 particle_positions[j] = particle_positions[j] - x1[0]
                 particle_positions[j+1] = particle_positions[j+1] - x2[0]
-    # if frame == 20:
-    #     pdb.set_trace()
+    if frame == 200:
+        pdb.set_trace()
     # print(particle_positions[1:])
     # print(old_particle_positions[1:])
     V = (1/dt/frames)*(particle_positions[1:] - old_particle_positions[1:])
