@@ -6,7 +6,7 @@ import os
 # Should only for 2 positions X1 and X2
 def update_pos(position,L):
     dt = 0.1
-    compliance = 1e-12/dt/dt
+    compliance = 1e-8/dt/dt
     diff = pos_diff(position)
     norm = np.linalg.norm(diff, axis=-1, keepdims=True)
     # computing lambda (for each constraint)
@@ -36,8 +36,8 @@ def generate_particles(num_particles, bounds):
     z = 10 * np.ones(num_particles)
     return np.column_stack((x, y, z))
 
-spheres = pv.MultiBlock()   
-ACC = np.array([0.,0.,-980*5])
+# spheres = pv.MultiBlock()   
+ACC = np.array([0.,0.,-98])
 # Setting each particle with same mass
 MASS_INV = 1
 new_lambda = 0
@@ -46,8 +46,8 @@ Velocity = 0
 Fixed_point = True
 # Generate particle positions
 # bounds for x 
-number_of_particles = 10
-bounds = [0, 2000]
+number_of_particles = 20
+bounds = [0, 5000]
 DISTANCE = bounds[1]/(number_of_particles-1)
 particle_positions = generate_particles(number_of_particles, bounds)
 if Fixed_point == True:
@@ -67,14 +67,14 @@ camera_position =(5000, 5000, 0)
 # camera_up = (-0.714, -0.288, -0.639)
 num = len(os.listdir('videos'))
 plotter = pv.Plotter()
-# 
+spheres = pv.MultiBlock()  
 pv.set_plot_theme('document')
 plotter.add_axes()
 plotter.add_mesh(spheres, color='red', show_edges=True, lighting=True)
 plotter.show(interactive_update=True)
 plotter.camera_position = 'xz'
-plotter.camera.position = camera_position
-spheres = pv.MultiBlock()
+# plotter.camera.position = camera_position
+# spheres = pv.MultiBlock()
 if save == True:
     plotter.open_movie(f"videos/distance_constraint_PBD_test{num}.mp4")
     plotter.write_frame()
@@ -85,9 +85,8 @@ solver_iter = 50
 for frame in range(frames):
     start = time.time()
     # not updating the first particle
-    particle_positions[1:] = particle_positions[1:] + V * dt + ACCELARATION * (dt)**2   
-    print(particle_positions)
     old_particle_positions = particle_positions.copy()
+    particle_positions[1:] = particle_positions[1:] + V * dt + ACCELARATION * (dt)**2   
     new_lambda = 0
     for j in range(particle_positions.shape[0]-1):
         # pdb.set_trace()
@@ -104,7 +103,7 @@ for frame in range(frames):
     # Create a new set of spheres for each frame
     spheres = pv.MultiBlock()
     for pos in particle_positions:
-        sphere = pv.Sphere(radius=25, center=pos)
+        sphere = pv.Sphere(radius=35, center=pos)
         spheres.append(sphere)
 
     # Add the spheres to the plotter
