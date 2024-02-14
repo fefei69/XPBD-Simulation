@@ -6,15 +6,17 @@ import os
 # Should only for 2 positions X1 and X2
 def update_pos(position,L):
     dt = 0.01
-    compliance = 1e-8/dt/dt
+    compliance = 1e-20/dt/dt
     diff = pos_diff(position)
     norm = np.linalg.norm(diff, axis=-1, keepdims=True)
     # computing lambda (for each constraint)
     delta_L = (-(norm - DISTANCE) - compliance*L)/(2+compliance)
-    L_new = L - delta_L
+    L_new = L + delta_L
     n = diff/norm
-    delta_x1 = delta_L * MASS_INV * (n)
-    delta_x2 = delta_L * MASS_INV * (-n)
+    delta_x1 = delta_L * MASS_INV * (-n)
+    delta_x2 = delta_L * MASS_INV * (n)
+    # print("diff",diff)
+    # print("norm",norm)
     # pdb.set_trace()
     return delta_x1, delta_x2, L_new
 
@@ -41,7 +43,7 @@ ACC = np.array([0.,0.,-9.8])
 # Setting each particle with same mass
 MASS_INV = 1
 new_lambda = 0
-save = True
+save = False
 Velocity = 0
 Fixed_point = True
 # Generate particle positions
@@ -77,7 +79,7 @@ if save == True:
     plotter.write_frame()
 plotter.camera.position = camera_position
 
-frames = 300 
+frames = 900 
 dt = 0.01  # Time step for animation
 solver_iter = 100
 for frame in range(frames):
@@ -85,27 +87,35 @@ for frame in range(frames):
     # not updating the first particle
     particle_positions[1:] = particle_positions[1:] + V * frame * dt + ACCELARATION * (frame * dt)**2   
     old_particle_positions = particle_positions.copy()
+    new_lambda = 0
     # print(f"it: {frame}, Before loop\n",particle_positions)
     for j in range(particle_positions.shape[0]-1):
         # pdb.set_trace()
+        print(f"Distance{j}",np.linalg.norm(pos_diff(particle_positions[1:]), axis=-1, keepdims=True))
         for _ in range(solver_iter):
             x1,x2, new_lambda = update_pos(particle_positions[j:j+2],new_lambda)
+            
             # print(new_lambda)
             # print(x1)
             # pdb.set_trace()
             if j == 0:
                 particle_positions[j] = particle_positions[j]
-                particle_positions[j+1] = particle_positions[j+1] - x2[0]
+                particle_positions[j+1] = particle_positions[j+1] + x2[0]
             else:
-                particle_positions[j] = particle_positions[j] - x1[0]
-                particle_positions[j+1] = particle_positions[j+1] - x2[0]
-    if frame == 200:
-        pdb.set_trace()
+                particle_positions[j] = particle_positions[j] + x1[0]
+                particle_positions[j+1] = particle_positions[j+1] + x2[0]
+        print("x1",x1[0])
+        print("new L",new_lambda)
+        # if frame == 50:
+        #     print("Distance",np.linalg.norm(pos_diff(particle_positions[1:]), axis=-1, keepdims=True))
+        #     pdb.set_trace()
+    # if frame == 200:
+    #     pdb.set_trace()
     # print(particle_positions[1:])
     # print(old_particle_positions[1:])
     V = (1/dt/frames)*(particle_positions[1:] - old_particle_positions[1:])
     # print("Velocity",particle_positions[1:] - old_particle_positions[1:])
-    print("Distance",np.linalg.norm(pos_diff(particle_positions[1:]), axis=-1, keepdims=True))
+    # print("Distance",np.linalg.norm(pos_diff(particle_positions[1:]), axis=-1, keepdims=True))
     
     # print(f"it:{frame} , after loop\n",particle_positions)
     # print(old_particle_positions)
