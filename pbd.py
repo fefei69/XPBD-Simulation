@@ -63,8 +63,8 @@ else:
 # pdb.set_trace()
 
 # camera_focal_point = (-0.097, 0.168, -0.740)
-camera_position =(5000, 5000, 0)
-# camera_up = (-0.714, -0.288, -0.639)
+camera_position =(0., -24413.195, 0.)
+camera_up = (0., 0., 1.)
 num = len(os.listdir('videos'))
 plotter = pv.Plotter()
 spheres = pv.MultiBlock()  
@@ -72,7 +72,14 @@ pv.set_plot_theme('document')
 plotter.add_axes()
 plotter.add_mesh(spheres, color='red', show_edges=True, lighting=True)
 plotter.show(interactive_update=True)
-plotter.camera_position = 'xz'
+plotter.camera_position = camera_position
+plotter.camera.up = camera_up
+# for pos in particle_positions:
+#     sphere = pv.Sphere(radius=35, center=pos)
+#     spheres.append(sphere)
+# plotter.add_mesh(spheres, color='red')
+# plotter.show(interactive_update=True)
+# plotter.clear()
 # plotter.camera.position = camera_position
 # spheres = pv.MultiBlock()
 if save == True:
@@ -102,6 +109,13 @@ for frame in range(frames):
     V = (1/dt)*(particle_positions[1:] - old_particle_positions[1:])
     # Create a new set of spheres for each frame
     spheres = pv.MultiBlock()
+    # get camera parameter
+    focal = plotter.camera.focal_point
+    pos = plotter.camera.position
+    up = plotter.camera.up
+    print(f'Focal Point: ({focal[0]:.3f}, {focal[1]:.3f}, {focal[2]:.3f})')
+    print(f'Camera Pos: ({pos[0]:.3f}, {pos[1]:.3f}, {pos[2]:.3f})')
+    print(f'Camera Up: ({up[0]:.3f}, {up[1]:.3f}, {up[2]:.3f})')
     for pos in particle_positions:
         sphere = pv.Sphere(radius=35, center=pos)
         spheres.append(sphere)
